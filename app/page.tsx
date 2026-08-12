@@ -165,7 +165,7 @@ export default function Home() {
     return (
       <main className="shell intro-shell">
         <nav className="brandbar">
-          <a className="brand" href="https://omniprocessconsulting.com/">OMNI <span>PROCESS</span></a>
+          <a className="brand" href="https://omniprocessconsulting.com/" aria-label="Omni Process Consulting home"><img src="/opc-logo.png" alt="Omni Process Consulting" /></a>
           <span className="nav-note">HVAC lead systems</span>
         </nav>
         <section className="hero">
@@ -204,7 +204,7 @@ export default function Home() {
   return (
     <main className="shell app-shell">
       <nav className="brandbar compact">
-        <button className="brand brand-button" onClick={reset}>OMNI <span>PROCESS</span></button>
+        <button className="brand brand-button" onClick={reset} aria-label="Return to the assessment welcome screen"><img src="/opc-logo.png" alt="Omni Process Consulting" /></button>
         <span className="nav-note">HVAC Lead Leak Assessment</span>
       </nav>
 
