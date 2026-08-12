@@ -170,7 +170,7 @@ export default function Home() {
         </nav>
         <section className="hero">
           <div className="hero-copy">
-            <div className="pill">Free 8-minute assessment</div>
+            <div className="pill">Your 8-minute HVAC assessment</div>
             <h1>Find the leaks between the first call and the booked job.</h1>
             <p className="lede">Check your after-hours response, Google profile, website, follow-up and advertising - then estimate what missed opportunities may be costing you.</p>
             <div className="hero-actions">
