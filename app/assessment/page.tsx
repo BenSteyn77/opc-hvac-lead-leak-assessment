@@ -109,7 +109,6 @@ export default function Home() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>(Array(totalQuestions).fill(null));
   const [calls, setCalls] = useState(10);
-  const [missedPercent, setMissedPercent] = useState(30);
   const [averageInvoice, setAverageInvoice] = useState(700);
   const [closeRate, setCloseRate] = useState(70);
 
@@ -125,7 +124,10 @@ export default function Home() {
   const yesCount = answers.filter((answer) => answer === "yes").length;
   const completed = answers.filter(Boolean).length;
   const score = Math.round((yesCount / totalQuestions) * 100);
-  const missedCalls = calls * (missedPercent / 100);
+  // A perfect process still carries a small amount of real-world risk. Each
+  // failed check increases the estimated exposure, reaching 100% at 0/100.
+  const exposureRate = Math.round(3 + ((100 - score) / 100) * 97);
+  const missedCalls = calls * (exposureRate / 100);
   const revenueLeak = Math.round(missedCalls * averageInvoice * (closeRate / 100));
   const isResults = step === sections.length + 1;
   const isCalculator = step === sections.length;
@@ -156,7 +158,6 @@ export default function Home() {
     setStep(0);
     setAnswers(Array(totalQuestions).fill(null));
     setCalls(10);
-    setMissedPercent(30);
     setAverageInvoice(700);
     setCloseRate(70);
   }
@@ -242,14 +243,14 @@ export default function Home() {
       {isCalculator && (
         <section className="assessment-card calculator-card">
           <div className="step-count">06</div>
-          <div className="section-heading"><span>Revenue estimate</span><h2>What could missed calls be worth?</h2><p>Use conservative numbers from your business. This is an estimate, not a guarantee.</p></div>
+          <div className="section-heading"><span>Revenue estimate</span><h2>What could missed opportunities be worth?</h2><p>Use conservative numbers from your business. Your answers determine the estimated exposure rate, so stronger systems produce a lower estimate.</p></div>
           <div className="inputs-grid">
             <label>After-hours calls per month<input type="number" min="0" value={calls} onChange={(e) => setCalls(Number(e.target.value))} /></label>
-            <label>Unanswered or not followed up<input type="number" min="0" max="100" value={missedPercent} onChange={(e) => setMissedPercent(Number(e.target.value))} /><em>%</em></label>
+            <label>Assessment-based exposure<input type="number" value={exposureRate} readOnly aria-label="Assessment-based opportunity exposure percentage" /><em>%</em></label>
             <label>Average completed repair invoice<input type="number" min="0" value={averageInvoice} onChange={(e) => setAverageInvoice(Number(e.target.value))} /><em>$</em></label>
             <label>Booking and approval rate<input type="number" min="0" max="100" value={closeRate} onChange={(e) => setCloseRate(Number(e.target.value))} /><em>%</em></label>
           </div>
-          <div className="estimate"><span>Potential monthly repair revenue at risk</span><strong>${revenueLeak.toLocaleString()}</strong><p>{missedCalls.toFixed(1)} estimated missed qualified calls × ${averageInvoice.toLocaleString()} × {closeRate}% close rate</p></div>
+          <div className="estimate"><span>Potential monthly repair revenue at risk</span><strong>${revenueLeak.toLocaleString()}</strong><p>Your {score}/100 system score indicates approximately {exposureRate}% opportunity exposure: {calls} calls × {exposureRate}% × ${averageInvoice.toLocaleString()} × {closeRate}% booking and approval rate.</p></div>
         </section>
       )}
 
