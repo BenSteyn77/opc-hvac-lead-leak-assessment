@@ -1,6 +1,9 @@
+import PurchaseTracker from "./purchase-tracker";
+
 export default function SuccessPage() {
   return (
     <main className="success-page">
+      <PurchaseTracker />
       <nav className="lp-nav"><a href="https://omniprocessconsulting.com/"><img src="/opc-logo.png" alt="Omni Process Consulting" /></a><span>Payment confirmed</span></nav>
       <section className="success-card">
         <div className="success-check">✓</div>

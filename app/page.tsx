@@ -1,7 +1,9 @@
+import TrackedCheckoutLink from "./tracked-checkout-link";
+
 const checkoutUrl = "https://buy.stripe.com/00w9ASeJW5GZdBX1WH6g800";
 
 function OrderButton({ label = "Start My HVAC Assessment" }: { label?: string }) {
-  return <a className="lp-button" href={checkoutUrl}>{label}<span>→</span></a>;
+  return <TrackedCheckoutLink href={checkoutUrl} label={label} />;
 }
 
 const systems = [
