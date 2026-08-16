@@ -1,287 +1,106 @@
-"use client";
+const checkoutUrl = "https://buy.stripe.com/00w9ASeJW5GZdBX1WH6g800";
 
-import { useMemo, useState } from "react";
+function OrderButton({ label = "Start My HVAC Assessment" }: { label?: string }) {
+  return <a className="lp-button" href={checkoutUrl}>{label}<span>→</span></a>;
+}
 
-type Answer = "yes" | "no" | null;
-
-const sections = [
-  {
-    eyebrow: "Call capture",
-    title: "What happens when a customer calls after hours?",
-    intro: "Answer based on what happens today - not what the process is supposed to do.",
-    questions: [
-      "Every after-hours call receives an immediate, useful response.",
-      "The caller is told what will happen next and when.",
-      "The standby technician receives the name, address, symptoms and urgency by text.",
-      "Missed calls trigger an automatic text-back within two minutes.",
-      "A test call confirms the process works from call to booked appointment.",
-    ],
-    steps: [
-      "Call your company after hours from an unfamiliar number and time how long it takes to receive a useful response.",
-      "Rewrite the greeting so it states who will respond, what information is needed and the expected response time.",
-      "Create one standby alert containing the caller's name, address, issue, urgency and callback number.",
-      "Enable an immediate missed-call text that acknowledges the customer and asks whether the issue is urgent.",
-      "Run one end-to-end test every month and record where the handoff fails.",
-    ],
-  },
-  {
-    eyebrow: "Google Business Profile",
-    title: "Can local customers find and trust you?",
-    intro: "Search your company name on Google and check the live profile on a phone.",
-    questions: [
-      "Phone, website, service area, category and opening hours are accurate.",
-      "Your profile lists specific services such as furnace repair and no-heat service.",
-      "Recent real photos and professional review replies are visible.",
-      "The primary category and service areas match the work you most want to win.",
-      "New reviews are requested consistently and mention the service and location naturally.",
-    ],
-    steps: [
-      "Open your profile in Google Search and correct the phone, website, hours and service area.",
-      "Add each profitable service individually with a plain-language description and no keyword stuffing.",
-      "Upload current team, vehicle and completed-job photos, then reply to every unanswered review.",
-      "Compare your primary category and service areas with three strong local competitors and correct any mismatch.",
-      "Send a direct review link after completed jobs and let the customer describe their real experience.",
-    ],
-  },
-  {
-    eyebrow: "Website",
-    title: "Does your mobile site turn urgency into a call?",
-    intro: "Open your website on mobile data, not office Wi-Fi.",
-    questions: [
-      "Service, location and the next action are clear within three seconds.",
-      "A visible Call Now button works without scrolling.",
-      "The page shows real trust proof and a short emergency enquiry form.",
-      "Core pages load quickly and are easy to use on a mobile connection.",
-      "Each priority service and location has relevant, useful page content.",
-    ],
-    steps: [
-      "Rewrite the first screen to show the service, service area and one clear call-to-action.",
-      "Test the phone button on iPhone and Android and keep a sticky call button visible on mobile.",
-      "Add recent reviews, licenses, guarantees and a short form that only asks what dispatch needs.",
-      "Run the homepage through PageSpeed Insights and fix oversized images and major mobile layout issues first.",
-      "Create useful pages for your highest-value service and location combinations instead of sending every click home.",
-    ],
-  },
-  {
-    eyebrow: "Follow-up",
-    title: "Does every lead reach the right person?",
-    intro: "Follow one recent lead from first contact through to its final outcome.",
-    questions: [
-      "The customer receives a confirmation text immediately.",
-      "Every lead enters the CRM with source, urgency and a clear owner.",
-      "Unbooked leads, estimates and completed jobs trigger the correct next step.",
-      "No-response leads receive a structured sequence across more than one day.",
-      "Management can see response time, booking status and lost-lead reasons.",
-    ],
-    steps: [
-      "Send an immediate confirmation containing the request, next step and company contact details.",
-      "Make source, urgency, owner and next action required fields before a lead can sit in the CRM.",
-      "Create separate follow-ups for unbooked calls, open estimates, completed jobs and review requests.",
-      "Use a short multi-day follow-up sequence and stop it automatically when the customer replies or books.",
-      "Review a weekly pipeline report showing response time, booked, won, lost and the reason each lead was lost.",
-    ],
-  },
-  {
-    eyebrow: "Advertising",
-    title: "Can you connect ad spend to booked revenue?",
-    intro: "Clicks and cheap leads are not the result. Follow the money to closed work.",
-    questions: [
-      "Google Ads calls and forms are recorded as conversions.",
-      "Emergency searches land on a matching HVAC page rather than a generic homepage.",
-      "Weekly reporting includes qualified leads, booked jobs and closed revenue by source.",
-      "Search terms and location targeting are reviewed regularly to remove wasted spend.",
-      "Campaign decisions are based on cost per booked or closed job, not clicks alone.",
-    ],
-    steps: [
-      "Test every ad phone number and form, then confirm each successful action appears as a conversion.",
-      "Send urgent searches to a fast page that matches the exact service, location and next action.",
-      "Build one weekly scorecard covering spend, leads, qualified leads, booked jobs and closed revenue by source.",
-      "Review search terms and served locations weekly; exclude irrelevant queries and areas you cannot profitably serve.",
-      "Calculate cost per booked job and cost per closed job before increasing or cutting campaign spend.",
-    ],
-  },
+const systems = [
+  ["01", "Call capture", "See what happens when an urgent customer calls after hours—and whether the right information reaches the right person."],
+  ["02", "Google Business Profile", "Check whether local customers can find accurate information, understand your services and see enough proof to trust you."],
+  ["03", "Website conversion", "Evaluate whether your mobile website makes the service, location and next action immediately clear."],
+  ["04", "Lead follow-up", "Examine whether new leads enter the right pipeline, receive confirmation and continue toward a clear outcome."],
+  ["05", "Advertising accountability", "Determine whether you can connect ad spend to qualified leads, booked appointments and closed revenue."],
 ];
 
-const totalQuestions = sections.reduce((sum, section) => sum + section.questions.length, 0);
+const faqs = [
+  ["How long does it take?", "Most HVAC owners complete the assessment in approximately eight minutes."],
+  ["Is this a PDF?", "No. It is an interactive assessment that scores your answers and creates a prioritized action plan."],
+  ["Do you need access to my accounts?", "No. The assessment is self-guided and does not require access to your ads, CRM, website or Google account."],
+  ["Does the revenue estimate guarantee results?", "No. It is a planning estimate based on the figures you enter. Actual results depend on lead quality, booking rates, job values and margins."],
+  ["Is there a subscription?", "No. Your $17 purchase is a single payment with immediate online access."],
+  ["Can I repeat it?", "Yes. Repeat the assessment after making improvements to see whether your scores change."],
+];
 
-export default function Home() {
-  const [started, setStarted] = useState(false);
-  const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<Answer[]>(Array(totalQuestions).fill(null));
-  const [calls, setCalls] = useState(10);
-  const [missedPercent, setMissedPercent] = useState(30);
-  const [averageInvoice, setAverageInvoice] = useState(700);
-  const [closeRate, setCloseRate] = useState(70);
-
-  const offsets = useMemo(() => {
-    let current = 0;
-    return sections.map((section) => {
-      const offset = current;
-      current += section.questions.length;
-      return offset;
-    });
-  }, []);
-
-  const yesCount = answers.filter((answer) => answer === "yes").length;
-  const completed = answers.filter(Boolean).length;
-  const score = Math.round((yesCount / totalQuestions) * 100);
-  const missedCalls = calls * (missedPercent / 100);
-  const revenueLeak = Math.round(missedCalls * averageInvoice * (closeRate / 100));
-  const isResults = step === sections.length + 1;
-  const isCalculator = step === sections.length;
-  const currentSection = sections[step];
-  const sectionComplete = currentSection
-    ? currentSection.questions.every((_, index) => answers[offsets[step] + index] !== null)
-    : true;
-
-  const breakdown = sections
-    .map((section, index) => ({
-      title: section.eyebrow,
-      failures: section.questions.filter((_, q) => answers[offsets[index] + q] === "no").length,
-      score: Math.round((section.questions.filter((_, q) => answers[offsets[index] + q] === "yes").length / section.questions.length) * 100),
-      actions: section.questions.flatMap((question, q) => answers[offsets[index] + q] === "no" ? [{ question, step: section.steps[q] }] : []),
-    }));
-
-  const priorities = breakdown
-    .filter((item) => item.failures > 0)
-    .sort((a, b) => b.failures - a.failures)
-    .slice(0, 3);
-
-  function setAnswer(questionIndex: number, answer: Answer) {
-    setAnswers((current) => current.map((value, index) => (index === questionIndex ? answer : value)));
-  }
-
-  function reset() {
-    setStarted(false);
-    setStep(0);
-    setAnswers(Array(totalQuestions).fill(null));
-    setCalls(10);
-    setMissedPercent(30);
-    setAverageInvoice(700);
-    setCloseRate(70);
-  }
-
-  if (!started) {
-    return (
-      <main className="shell intro-shell">
-        <nav className="brandbar">
-          <a className="brand" href="https://omniprocessconsulting.com/" aria-label="Omni Process Consulting home"><img src="/opc-logo.png" alt="Omni Process Consulting" /></a>
-          <span className="nav-note">HVAC lead systems</span>
-        </nav>
-        <section className="hero">
-          <div className="hero-copy">
-            <div className="pill">Your 8-minute HVAC assessment</div>
-            <h1>Find the leaks between the first call and the booked job.</h1>
-            <p className="lede">Check your after-hours response, Google profile, website, follow-up and advertising - then estimate what missed opportunities may be costing you.</p>
-            <div className="hero-actions">
-              <button className="primary" onClick={() => setStarted(true)}>Start the assessment <span>→</span></button>
-              <span>No login. Results are instant.</span>
-            </div>
-            <div className="proof-row">
-              <div><strong>5</strong><span>systems checked</span></div>
-              <div><strong>25</strong><span>practical questions</span></div>
-              <div><strong>1</strong><span>prioritized action plan</span></div>
-            </div>
-          </div>
-          <aside className="hero-panel" aria-label="Assessment preview">
-            <span className="signal">Lead system live</span>
-            <div className="call-card">
-              <div className="call-icon">☎</div>
-              <div><strong>After-hours no-heat call</strong><span>Captured and routed in seconds</span></div>
-              <b>High intent</b>
-            </div>
-            <div className="pipeline">
-              {['Call', 'Capture', 'CRM', 'Booked'].map((item, index) => <div key={item}><i>{index + 1}</i><span>{item}</span></div>)}
-            </div>
-            <div className="loss-card"><span>Potential leak</span><strong>Voicemail → competitor</strong></div>
-          </aside>
-        </section>
-        <footer>Built for HVAC companies where every winter call counts.</footer>
-      </main>
-    );
-  }
-
+export default function LandingPage() {
   return (
-    <main className="shell app-shell">
-      <nav className="brandbar compact">
-        <button className="brand brand-button" onClick={reset} aria-label="Return to the assessment welcome screen"><img src="/opc-logo.png" alt="Omni Process Consulting" /></button>
-        <span className="nav-note">HVAC Lead Leak Assessment</span>
+    <main className="lp-page">
+      <div className="lp-bar">Built for HVAC owners who suspect good leads are slipping through the cracks.</div>
+
+      <nav className="lp-nav">
+        <a href="https://omniprocessconsulting.com/" aria-label="Omni Process Consulting home"><img src="/opc-logo.png" alt="Omni Process Consulting" /></a>
+        <span>HVAC Lead Leak Assessment</span>
       </nav>
 
-      <div className="progress-wrap" aria-label={`Assessment progress: ${Math.min(step + 1, sections.length + 2)} of ${sections.length + 2}`}>
-        <div className="progress-label"><span>Assessment progress</span><strong>{Math.round((Math.min(step + 1, sections.length + 2) / (sections.length + 2)) * 100)}%</strong></div>
-        <div className="progress"><i style={{ width: `${(Math.min(step + 1, sections.length + 2) / (sections.length + 2)) * 100}%` }} /></div>
-      </div>
-
-      {currentSection && (
-        <section className="assessment-card">
-          <div className="step-count">0{step + 1}</div>
-          <div className="section-heading">
-            <span>{currentSection.eyebrow}</span>
-            <h2>{currentSection.title}</h2>
-            <p>{currentSection.intro}</p>
-          </div>
-          <div className="question-list">
-            {currentSection.questions.map((question, index) => {
-              const globalIndex = offsets[step] + index;
-              return (
-                <div className="question" key={question}>
-                  <p><b>{String(index + 1).padStart(2, '0')}</b>{question}</p>
-                  <div className="choice" role="group" aria-label={question}>
-                    <button className={answers[globalIndex] === "yes" ? "selected yes" : ""} onClick={() => setAnswer(globalIndex, "yes")}>Yes</button>
-                    <button className={answers[globalIndex] === "no" ? "selected no" : ""} onClick={() => setAnswer(globalIndex, "no")}>Not yet</button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {!sectionComplete && <p className="helper">Answer all five questions to continue.</p>}
-        </section>
-      )}
-
-      {isCalculator && (
-        <section className="assessment-card calculator-card">
-          <div className="step-count">06</div>
-          <div className="section-heading"><span>Revenue estimate</span><h2>What could missed calls be worth?</h2><p>Use conservative numbers from your business. This is an estimate, not a guarantee.</p></div>
-          <div className="inputs-grid">
-            <label>After-hours calls per month<input type="number" min="0" value={calls} onChange={(e) => setCalls(Number(e.target.value))} /></label>
-            <label>Unanswered or not followed up<input type="number" min="0" max="100" value={missedPercent} onChange={(e) => setMissedPercent(Number(e.target.value))} /><em>%</em></label>
-            <label>Average completed repair invoice<input type="number" min="0" value={averageInvoice} onChange={(e) => setAverageInvoice(Number(e.target.value))} /><em>$</em></label>
-            <label>Booking and approval rate<input type="number" min="0" max="100" value={closeRate} onChange={(e) => setCloseRate(Number(e.target.value))} /><em>%</em></label>
-          </div>
-          <div className="estimate"><span>Potential monthly repair revenue at risk</span><strong>${revenueLeak.toLocaleString()}</strong><p>{missedCalls.toFixed(1)} estimated missed qualified calls × ${averageInvoice.toLocaleString()} × {closeRate}% close rate</p></div>
-        </section>
-      )}
-
-      {isResults && (
-        <section className="results">
-          <div className="result-hero">
-            <div className={`score-ring ${score >= 80 ? 'good' : score >= 55 ? 'mid' : 'low'}`} style={{ '--score': `${score * 3.6}deg` } as React.CSSProperties}><div><strong>{score}</strong><span>/ 100</span></div></div>
-            <div><span className="result-label">Your lead-system score</span><h2>{score >= 80 ? 'Strong foundation. Tighten the weak handoffs.' : score >= 55 ? 'Your system is working - but leads can still disappear.' : 'Urgent leaks are costing response time and opportunity.'}</h2><p>You completed {completed} checks. Your conservative estimate shows <b>${revenueLeak.toLocaleString()} in potential monthly repair revenue at risk.</b></p></div>
-          </div>
-          <div className="result-grid">
-            <div className="priority-card"><span>Top priorities</span>{priorities.length ? priorities.map((item, index) => <div className="priority" key={item.title}><i>{index + 1}</i><div><strong>{item.title} · {item.score}%</strong><p>{item.failures} of 5 checks need attention. Start with: {item.actions[0]?.step}</p></div></div>) : <p className="all-clear">No major gaps were identified. Continue testing real calls and verify closed revenue by source.</p>}</div>
-            <aside className="cta-card"><span>Want a second set of eyes?</span><h3>Company Lead-System Review</h3><p>We review calls, website, GBP, ads, CRM, calendar and follow-up - then show you what to fix first.</p><div className="price"><strong>$370</strong><s>Standard scope $2,000</s></div><a href="https://omniprocessconsulting.com/" target="_blank" rel="noreferrer">Request your review <span>→</span></a></aside>
-          </div>
-          <div className="breakdown-card">
-            <div className="breakdown-heading"><span>Your complete breakdown</span><h3>What to do next, section by section</h3><p>Work through the lowest scores first. Complete one action, test it in the real world, then move to the next.</p></div>
-            <div className="breakdown-list">
-              {breakdown.map((item) => <article className="breakdown-section" key={item.title}>
-                <div className="breakdown-score"><div><strong>{item.title}</strong><span>{5 - item.failures}/5 checks passed</span></div><b className={item.score >= 80 ? "good" : item.score >= 60 ? "mid" : "low"}>{item.score}%</b></div>
-                {item.actions.length ? <ol>{item.actions.map((action) => <li key={action.question}><span>{action.question}</span><p><b>Next step:</b> {action.step}</p></li>)}</ol> : <p className="section-clear">Strong result. Retest this section quarterly and after any process or staffing change.</p>}
-              </article>)}
-            </div>
-          </div>
-          <button className="restart" onClick={reset}>Restart assessment</button>
-        </section>
-      )}
-
-      {!isResults && (
-        <div className="navigation">
-          <button className="secondary" disabled={step === 0} onClick={() => setStep((value) => Math.max(0, value - 1))}>← Back</button>
-          <button className="primary" disabled={Boolean(currentSection && !sectionComplete)} onClick={() => setStep((value) => Math.min(sections.length + 1, value + 1))}>{isCalculator ? 'See my results' : 'Continue'} <span>→</span></button>
+      <section className="lp-hero">
+        <div className="lp-hero-copy">
+          <span className="lp-eyebrow">25-point lead-system diagnostic</span>
+          <h1>Find the hidden leaks costing your HVAC company calls, bookings and revenue.</h1>
+          <p>Complete a practical 8-minute assessment of your call handling, Google presence, website, follow-up and advertising—then leave with a prioritized action plan showing what to fix first.</p>
+          <ul><li>Score five critical parts of your lead system</li><li>Estimate the potential revenue affected by missed calls</li><li>Receive next steps based on your answers</li></ul>
+          <div className="lp-price"><strong>$17</strong><span>one-time payment</span></div>
+          <OrderButton />
+          <small>Immediate access · No subscription · Secure Stripe checkout</small>
         </div>
-      )}
+        <div className="lp-product"><img src="/hvac-assessment-product.png" alt="HVAC Lead Leak Assessment diagnostic dashboard" /><div><b>8 minutes</b><span>to a clearer starting point</span></div></div>
+      </section>
+
+      <section className="lp-problem">
+        <div><span className="lp-eyebrow">Getting the lead is only the beginning</span><h2>Small leaks become expensive when they happen every day.</h2></div>
+        <div><p>Your company can have excellent technicians, strong reviews and a healthy advertising budget—and still lose valuable jobs between the first call and the booked appointment.</p><p>Most problems are not dramatic. They are repeated gaps: an after-hours call that reaches voicemail, an incomplete handoff, a confusing mobile page or a lead that never receives the next follow-up.</p></div>
+      </section>
+
+      <section className="lp-feature lp-feature-left" style={{backgroundImage:"linear-gradient(90deg,rgba(5,22,38,.96) 0%,rgba(5,22,38,.78) 48%,rgba(5,22,38,.12) 100%),url('/background-call-capture.png')"}}>
+        <div><span className="lp-eyebrow">The opportunity</span><h2>One missed call could become a lost $5,000+ replacement opportunity.</h2><p>Not every missed call is worth $5,000. But during peak season, one unanswered no-heat call could begin as a repair enquiry and eventually become a major replacement job.</p><p>The assessment uses your own business numbers—not exaggerated promises or generic industry averages.</p></div>
+      </section>
+
+      <section className="lp-inline-cta"><h3>You cannot fix a leak you have not identified.</h3><p>Find the gaps before another valuable enquiry disappears.</p><OrderButton label="Find My Lead Leaks" /><small>Immediate access · One-time payment · No subscription</small></section>
+
+      <section className="lp-systems">
+        <div className="lp-section-head"><span className="lp-eyebrow">Five systems. Twenty-five checks.</span><h2>See the entire journey—not one isolated marketing channel.</h2><p>Answer based on what happens today, not what the process is supposed to do.</p></div>
+        <div className="lp-system-grid">{systems.map(([number,title,copy])=><article key={number}><b>{number}</b><h3>{title}</h3><p>{copy}</p></article>)}</div>
+      </section>
+
+      <section className="lp-feature lp-feature-right" style={{backgroundImage:"linear-gradient(90deg,rgba(5,22,38,.10) 0%,rgba(5,22,38,.76) 52%,rgba(5,22,38,.97) 100%),url('/background-online-presence.png')"}}>
+        <div><span className="lp-eyebrow">More than visibility</span><h2>Being found is not the same as being chosen.</h2><p>Your Google profile and mobile website must quickly establish relevance, trust and a clear next action. The assessment reveals where that experience may be breaking down.</p></div>
+      </section>
+
+      <section className="lp-inline-cta lp-inline-dark"><h3>Twenty-five checks. Five critical systems. One clear place to start.</h3><p>Know which part of your lead process deserves attention first.</p><OrderButton /><small>Personalized results available immediately</small></section>
+
+      <section className="lp-deliverables">
+        <div className="lp-section-head"><span className="lp-eyebrow">Your results</span><h2>This is not another thin checklist.</h2><p>The assessment responds to your answers and produces a practical breakdown of your lead system.</p></div>
+        <div className="lp-deliverable-grid">
+          <div className="lp-result-card"><span>Your lead-system score</span><strong>0–100</strong><p>A single benchmark supported by five individual section scores.</p></div>
+          <ul><li>Five category scores</li><li>Your three highest-priority weaknesses</li><li>Every failed check identified</li><li>A practical next step for each weakness</li><li>A conservative missed-revenue estimate</li><li>Real-world testing instructions</li></ul>
+        </div>
+      </section>
+
+      <section className="lp-feature lp-feature-left" style={{backgroundImage:"linear-gradient(90deg,rgba(5,22,38,.97) 0%,rgba(5,22,38,.78) 48%,rgba(5,22,38,.12) 100%),url('/background-lead-follow-up.png')"}}>
+        <div><span className="lp-eyebrow">Follow the handoffs</span><h2>Good leads often disappear between systems.</h2><p>The call, CRM, calendar, technician alert and customer follow-up may each work individually. The risk appears when nobody tests whether they work together.</p></div>
+      </section>
+
+      <section className="lp-inline-cta"><h3>One recovered opportunity could repay the assessment many times over.</h3><p>Stop relying on assumptions. See what deserves attention first.</p><OrderButton label="Show Me What to Fix First" /><small>Only $17 · No recurring charges</small></section>
+
+      <section className="lp-fit">
+        <div><span className="lp-eyebrow">Built for service businesses where calls matter</span><h2>This assessment is for you if…</h2></div>
+        <ul><li>You own or manage an HVAC service company</li><li>You receive emergency or after-hours enquiries</li><li>You invest in Google or Meta advertising</li><li>You are unsure how many leads become booked jobs</li><li>Your calls, website, CRM and calendar do not work together</li><li>You want practical improvements before an expensive consultation</li></ul>
+      </section>
+
+      <section className="lp-feature lp-feature-right" style={{backgroundImage:"linear-gradient(90deg,rgba(5,22,38,.12) 0%,rgba(5,22,38,.76) 52%,rgba(5,22,38,.97) 100%),url('/background-ad-accountability.png')"}}>
+        <div><span className="lp-eyebrow">Advertising accountability</span><h2>Clicks are not the result. Booked and closed work is.</h2><p>See whether your reporting connects advertising spend to qualified calls, appointments and revenue—or stops at activity that never reaches the schedule.</p></div>
+      </section>
+
+      <section className="lp-upgrade">
+        <div><span className="lp-eyebrow">Available after your assessment</span><h2>Need a deeper review of the entire company?</h2><p>Assessment customers receive access to a private Complete Business Assessment offer covering calls, website, Google profile, advertising, CRM, calendar, follow-up and automation opportunities.</p></div>
+        <div className="lp-upgrade-price"><span>Standard scope</span><s>$2,000</s><strong>$370</strong><p>Preferred-client offer available only through this assessment funnel.</p></div>
+      </section>
+
+      <section className="lp-guarantee"><b>Practical-value guarantee</b><p>Complete all 25 questions and review your results. If the assessment does not identify at least one practical improvement you can apply to your lead process, contact us within seven days for a refund.</p></section>
+
+      <section className="lp-faq"><div className="lp-section-head"><span className="lp-eyebrow">Questions</span><h2>Before you begin</h2></div><div>{faqs.map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</div></section>
+
+      <section className="lp-final"><span className="lp-eyebrow">Your next missed call may already be looking elsewhere.</span><h2>Find the weak points between the first call and the booked job.</h2><p>Get your personalized HVAC Lead Leak Assessment and start strengthening the system today.</p><div className="lp-price"><strong>$17</strong><span>one-time payment</span></div><OrderButton label="Get Immediate Access" /><small>Secure Stripe checkout · Approximately 8 minutes · Actionable results</small></section>
+
+      <footer className="lp-footer"><img src="/opc-logo.png" alt="Omni Process Consulting" /><p>© 2026 Omni Process Consulting. This assessment provides planning guidance, not guaranteed financial results.</p></footer>
     </main>
   );
 }

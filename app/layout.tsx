@@ -2,14 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HVAC Lead Leak Assessment | Omni Process Consulting",
-  description: "Find missed calls, weak follow-up and potential revenue leaks across your HVAC lead system.",
+  title: "HVAC Lead Leak Assessment | Find Where Leads Are Being Lost",
+  description: "Assess 25 HVAC lead-system checkpoints and receive prioritized actions across calls, Google, website, follow-up and advertising.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: { index: false, follow: false },
-  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
