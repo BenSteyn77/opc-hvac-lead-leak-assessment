@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 declare global {
@@ -14,22 +14,15 @@ export const gaMeasurementId = "G-H8F5K91T45";
 
 export function GoogleAnalytics() {
   const pathname = usePathname();
+  const initialPageViewSent = useRef(false);
 
   useEffect(() => {
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function (...args: unknown[]) { window.dataLayer!.push(args); };
-    if (!document.querySelector(`script[data-ga4="${gaMeasurementId}"]`)) {
-      const script = document.createElement("script");
-      script.async = true;
-      script.dataset.ga4 = gaMeasurementId;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
-      document.head.appendChild(script);
-      window.gtag("js", new Date());
-      window.gtag("config", gaMeasurementId, { send_page_view: false });
+    // The inline bootstrap below sends the first page view. Only send another
+    // one when Next performs a client-side route change.
+    if (!initialPageViewSent.current) {
+      initialPageViewSent.current = true;
+      return;
     }
-  }, []);
-
-  useEffect(() => {
     if (!window.gtag) return;
     window.gtag("event", "page_view", {
       page_title: document.title,
@@ -38,7 +31,16 @@ export function GoogleAnalytics() {
     });
   }, [pathname]);
 
-  return null;
+  return (
+    <>
+      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=window.gtag||gtag;gtag('js',new Date());gtag('config','${gaMeasurementId}');`,
+        }}
+      />
+    </>
+  );
 }
 
 export function trackGoogleEvent(event: string, parameters?: Record<string, unknown>) {
