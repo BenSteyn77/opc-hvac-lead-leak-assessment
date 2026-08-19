@@ -34,11 +34,7 @@ export function GoogleAnalytics() {
   return (
     <>
       <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} />
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=window.gtag||gtag;gtag('js',new Date());gtag('config','${gaMeasurementId}');`,
-        }}
-      />
+      <script src="/ga4-init.js" />
     </>
   );
 }
