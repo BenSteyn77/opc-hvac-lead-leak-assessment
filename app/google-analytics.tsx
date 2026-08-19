@@ -34,7 +34,7 @@ export function GoogleAnalytics() {
   return (
     <>
       <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} />
-      <script src="/ga4-init.js" />
+      <script src="/site-init.js" />
     </>
   );
 }
