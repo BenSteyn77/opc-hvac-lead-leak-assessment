@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 declare global {
@@ -12,18 +12,26 @@ declare global {
 
 export const gaMeasurementId = "G-H8F5K91T45";
 
+function initializeGoogleAnalytics() {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = window.gtag || function (...args: unknown[]) { window.dataLayer!.push(args); };
+
+  if (!document.querySelector(`script[data-ga4="${gaMeasurementId}"]`)) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.dataset.ga4 = gaMeasurementId;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`;
+    document.head.appendChild(script);
+    window.gtag("js", new Date());
+    window.gtag("config", gaMeasurementId, { send_page_view: false });
+  }
+}
+
 export function GoogleAnalytics() {
   const pathname = usePathname();
-  const initialPageViewSent = useRef(false);
 
   useEffect(() => {
-    // The inline bootstrap below sends the first page view. Only send another
-    // one when Next performs a client-side route change.
-    if (!initialPageViewSent.current) {
-      initialPageViewSent.current = true;
-      return;
-    }
-    if (!window.gtag) return;
+    initializeGoogleAnalytics();
     window.gtag("event", "page_view", {
       page_title: document.title,
       page_location: window.location.href,
@@ -31,14 +39,12 @@ export function GoogleAnalytics() {
     });
   }, [pathname]);
 
-  return (
-    <>
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`} />
-      <script src="/site-init.js" />
-    </>
-  );
+  // A real DOM node ensures Vinext hydrates this client component. A component
+  // that rendered null was emitted in HTML but its effect never ran in Workers.
+  return <span hidden aria-hidden="true" data-opc-analytics="ga4" />;
 }
 
 export function trackGoogleEvent(event: string, parameters?: Record<string, unknown>) {
+  initializeGoogleAnalytics();
   window.gtag?.("event", event, parameters || {});
 }
